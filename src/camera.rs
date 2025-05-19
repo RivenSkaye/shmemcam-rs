@@ -1,7 +1,10 @@
 use std::{
     num::{NonZeroU32, NonZeroUsize},
     ops::Deref,
-    sync::{atomic::AtomicBool, OnceLock},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Mutex, OnceLock,
+    },
 };
 
 use nokhwa::{
@@ -10,14 +13,21 @@ use nokhwa::{
     utils::{ApiBackend, CameraFormat, RequestedFormat, RequestedFormatType, Resolution},
     CallbackCamera,
 };
-use winmmf::{MMFLock, MemoryMappedFile, Mmf, RWLock};
+use winmmf::{MMFLock, MemoryMappedFile, Mmf, Namespace, RWLock};
 
 pub static CAMERAS: OnceLock<Vec<CallbackCamera>> = OnceLock::new();
-static CAMS_INITIZALIZED: AtomicBool = AtomicBool::new(false);
+static CAMS_INITIZALIZED: Mutex<AtomicBool> = Mutex::new(AtomicBool::new(false));
 
-pub fn init_cams(basename: Option<impl Deref<Target = str>>, width: Option<NonZeroU32>, height: Option<NonZeroU32>) {
-    if CAMS_INITIZALIZED.load(std::sync::atomic::Ordering::Acquire) {
-        return;
+pub fn init_cams(
+    basename: Option<impl Deref<Target = str>>,
+    width: Option<NonZeroU32>,
+    height: Option<NonZeroU32>,
+) -> Result<(), &'static str> {
+    let lock = CAMS_INITIZALIZED.lock();
+    if lock.is_err() {
+        return Err("Could not lock the init mutex, quitting!");
+    } else if lock.as_ref().is_ok_and(|init| init.load(std::sync::atomic::Ordering::Acquire)) {
+        return Ok(());
     }
     let basename = match basename {
         None => "CapturedCam".to_owned(),
@@ -41,7 +51,7 @@ pub fn init_cams(basename: Option<impl Deref<Target = str>>, width: Option<NonZe
         let mmf = MemoryMappedFile::<RWLock>::new(
             NonZeroUsize::new((res.height_y * res.width_x) as usize).unwrap(),
             format!("{basename}_{index}"),
-            winmmf::Namespace::GLOBAL,
+            Namespace::GLOBAL,
         )
         .unwrap();
         nextcam
@@ -51,11 +61,11 @@ pub fn init_cams(basename: Option<impl Deref<Target = str>>, width: Option<NonZe
         cameras.push(nextcam);
     }
 
+    // If anything goes wrong at this point, panic and bail.
     if let Ok(()) = CAMERAS.set(cameras) {
-        CAMS_INITIZALIZED
-            .compare_exchange(false, true, std::sync::atomic::Ordering::AcqRel, std::sync::atomic::Ordering::Relaxed)
-            .unwrap();
+        lock.unwrap().compare_exchange(false, true, Ordering::AcqRel, Ordering::Relaxed).unwrap();
     } else {
-        panic!("Couldn't set the OnceLock")
+        unreachable!("Couldn't set the OnceLock")
     }
+    Ok(())
 }
