@@ -13,6 +13,7 @@ use nokhwa::{
     utils::{ApiBackend, CameraFormat, RequestedFormat, RequestedFormatType, Resolution},
     CallbackCamera,
 };
+
 use winmmf::{MMFLock, MemoryMappedFile, Mmf, Namespace, RWLock};
 
 pub static CAMERAS: OnceLock<Vec<CallbackCamera>> = OnceLock::new();
