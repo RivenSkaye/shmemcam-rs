@@ -37,6 +37,8 @@ pub fn init_cams(
     let caminfo = query(ApiBackend::MediaFoundation).unwrap();
     let desired_res = Resolution::new(width.map(|w| w.get()).unwrap_or(1024), height.map(|h| h.get()).unwrap_or(576));
     let mut cameras = Vec::with_capacity(caminfo.len());
+    #[cfg(feature = "to_pub")]
+    let camfile = crate::util::find_camfile();
     for (index, info) in caminfo.iter().enumerate() {
         let mut nextcam = CallbackCamera::new(
             info.index().clone(),
@@ -60,6 +62,8 @@ pub fn init_cams(
             .unwrap();
         nextcam.open_stream().unwrap();
         cameras.push(nextcam);
+        #[cfg(feature = "to_pub")]
+        crate::util::write_camfile(format!("{basename}_{index}"), camfile.as_ref());
     }
 
     // If anything goes wrong at this point, panic and bail.
