@@ -4,6 +4,14 @@
     version = "0.1.0"
 
 [dependencies]
-nokhwa = { version = "0.10.7", default-features = false, features = ["input-msmf", "output-threaded", "camera-sync-impl"] }
-windows-service = "0.8.0"
-winmmf = "0.3.0"
+    nokhwa = {version = "0.10.7", default-features = false, features = [
+        "camera-sync-impl",
+        "input-msmf",
+        "output-threaded"
+    ]}
+    windows-service = "0.8.0"
+    winmmf = "0.3.0"
+
+[features]
+    default = ["to_pub"]
+    to_pub  = []
