@@ -53,7 +53,7 @@ pub fn init_cams(
         let res = nextcam.resolution().unwrap();
         let mmf = MemoryMappedFile::<RWLock>::new(
             NonZeroUsize::new((res.height_y * res.width_x) as usize).unwrap(),
-            format!("{basename}_{index}"),
+            format!("shmem_{basename}_{index}"),
             Namespace::GLOBAL,
         )
         .unwrap();
