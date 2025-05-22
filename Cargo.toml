@@ -10,7 +10,7 @@
         "output-threaded"
     ]}
     windows-service = "0.8.0"
-    winmmf = "0.3.0"
+    winmmf = "0.4.0"
 
 [features]
     default = ["to_pub"]
