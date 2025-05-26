@@ -10,10 +10,13 @@ use windows_service::{
 fn main() -> windows_service::Result<()> {
     if args().any(|arg| arg.to_lowercase().contains("help")) {
         println!("Welcome to the installer for the shmemcam service!");
-        println!("\tThe installation can be configured through env vars prefixed with `SHMEM_`.\n\u{27}[1mI refuse to parse a commandline\u{27}[0m.\n");
-        println!("%SHMEM_BASENAME% : controls the name prefix for the MMFs.");
-        println!("%SHMEM_WIDTH%    : controls the preferred width for images.");
-        println!("%SHMEM_HEIGHT%   : controls the preferred height for images.");
+        println!("\tThe installation can be configured through env vars prefixed with `SHMEM_`.\n\t\t\x1b[95mI refuse to parse a commandline\x1b[0m.\n");
+        print!("%SHMEM_BASENAME% : controls the name prefix for the MMFs.    ");
+        println!("(= {})", var("SHMEM_BASENAME").unwrap_or("unset".into()));
+        print!("%SHMEM_WIDTH%    : controls the preferred width for images.  ");
+        println!("(= {})", var("SHMEM_WIDTH").unwrap_or("unset".into()));
+        print!("%SHMEM_HEIGHT%   : controls the preferred height for images. ");
+        println!("(= {})", var("SHMEM_HEIGHT").unwrap_or("unset".into()));
         println!("\tIf the requested resolution isn't offered by any or all connected cameras,\n\tthe closest offer is selected instead.");
         return Ok(());
     }
