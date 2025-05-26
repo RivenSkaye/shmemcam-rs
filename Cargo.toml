@@ -15,3 +15,11 @@
 [features]
     default = ["to_pub"]
     to_pub  = []
+
+[[bin]]
+    name = "shmemcam"
+    path = "src/main.rs"
+
+[[bin]]
+    name = "installer"
+    path = "src/installer.rs"
