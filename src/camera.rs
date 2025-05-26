@@ -1,5 +1,6 @@
 use std::{
     borrow::Cow,
+    cell::SyncUnsafeCell,
     num::{NonZeroU32, NonZeroUsize},
     ops::Deref,
     sync::{
@@ -17,7 +18,7 @@ use nokhwa::{
 
 use winmmf::{MMFLock, MemoryMappedFile, Mmf, Namespace, RWLock};
 
-pub static CAMERAS: OnceLock<Vec<Mutex<CallbackCamera>>> = OnceLock::new();
+pub static CAMERAS: OnceLock<SyncUnsafeCell<Vec<Mutex<CallbackCamera>>>> = OnceLock::new();
 static CAMS_INITIZALIZED: Mutex<AtomicBool> = Mutex::new(AtomicBool::new(false));
 
 pub fn init_cams(
@@ -25,7 +26,7 @@ pub fn init_cams(
     width: Option<NonZeroU32>,
     height: Option<NonZeroU32>,
 ) -> Result<(), Cow<'static, str>> {
-    let lock = CAMS_INITIZALIZED.lock().map_err(|_| "Could not lock the init mutex, quitting!")?;
+    let lock = CAMS_INITIZALIZED.lock().map_err(|_| Cow::from("Could not lock the init mutex, quitting!"))?;
     if lock.load(std::sync::atomic::Ordering::Acquire) {
         return Ok(());
     }
@@ -93,7 +94,7 @@ pub fn init_cams(
     }
 
     // If anything goes wrong at this point, panic and bail.
-    if let Ok(()) = CAMERAS.set(cameras) {
+    if let Ok(_) = CAMERAS.set(cameras.into()) {
         lock.compare_exchange(false, true, Ordering::AcqRel, Ordering::Relaxed).unwrap();
         Ok(())
     } else {
@@ -102,11 +103,24 @@ pub fn init_cams(
 }
 
 pub fn close_cams() -> Result<(), Cow<'static, str>> {
-    let cams = CAMERAS.get().ok_or(Cow::from("Could not acquire the list of registered cameras!"))?;
+    let lock = CAMS_INITIZALIZED.lock().map_err(|_| Cow::from("Couldn't acquire the initializer lock!"))?;
+    if !lock.load(std::sync::atomic::Ordering::Acquire) {
+        return Ok(());
+    }
+    let cams = unsafe {
+        CAMERAS
+            .get()
+            .ok_or(Cow::from("Could not acquire the list of registered cameras!"))?
+            .get()
+            .as_mut()
+    }
+    .unwrap();
     for (index, cam) in cams.iter().enumerate() {
         let mut cam = cam.lock().unwrap();
         cam.stop_stream()
             .map_err(|e| Cow::from(format!("Couldn't close camera {index} : {}\n{e}", cam.info())))?;
     }
+    lock.store(false, Ordering::Release);
+    cams.clear();
     Ok(())
 }
