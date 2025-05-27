@@ -11,7 +11,12 @@ pub fn find_camfile() -> Option<PathBuf> {
     let pubdir = PathBuf::from(env::var("PUBLIC").unwrap_or("C:/Users/Public".into()));
     if !pubdir.exists() {
         if fs::create_dir_all(&pubdir).is_err() {
-            eprintln!("Public directory does not exist! Failed to recursively create {}", pubdir.to_string_lossy());
+            writeln!(
+                std::fs::File::open(std::env::current_exe().unwrap().with_file_name("shmemcam.log")).unwrap(),
+                "Public directory does not exist! Failed to recursively create {}",
+                pubdir.to_string_lossy()
+            )
+            .unwrap();
             return None;
         }
     }
@@ -19,11 +24,13 @@ pub fn find_camfile() -> Option<PathBuf> {
     let camfile = pubdir.canonicalize().unwrap();
     let camfile = camfile.join("shmem_camindices.txt");
     if fs::File::create(&camfile).is_err() {
-        eprintln!(
+        writeln!(
+            std::fs::File::open(std::env::current_exe().unwrap().with_file_name("shmemcam.log")).unwrap(),
             "Pubdir exists at {} but the camfile could not be created at {}",
             pubdir.to_string_lossy(),
             camfile.to_string_lossy()
-        );
+        )
+        .unwrap();
         return None;
     }
     Some(camfile)
@@ -41,7 +48,12 @@ pub fn write_camfile(camnames: impl Deref<Target = str>, camfile: Option<&PathBu
     } {
         let fh = fs::File::options().append(true).create(true).truncate(false).open(&outfile);
         if fh.is_err() {
-            eprintln!("Cannot open or create {}! Skipping the public file write!", outfile.to_string_lossy());
+            writeln!(
+                std::fs::File::open(std::env::current_exe().unwrap().with_file_name("shmemcam.log")).unwrap(),
+                "Cannot open or create {}! Skipping the public file write!",
+                outfile.to_string_lossy()
+            )
+            .unwrap();
             return;
         }
         let mut fh = fh.unwrap();

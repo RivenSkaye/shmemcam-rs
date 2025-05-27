@@ -23,7 +23,7 @@ fn main() -> windows_service::Result<()> {
     let manager_access = ServiceManagerAccess::CONNECT | ServiceManagerAccess::CREATE_SERVICE;
     let service_manager = ServiceManager::local_computer(None::<&str>, manager_access)?;
 
-    let mut runtime_args = Vec::with_capacity(3);
+    let mut runtime_args: Vec<OsString> = Vec::with_capacity(3);
     if let Ok(bn) = var("SHMEM_BASENAME") {
         runtime_args.push(format!("--basename={bn}").into())
     }
@@ -34,24 +34,19 @@ fn main() -> windows_service::Result<()> {
         runtime_args.push(format!("--height={ph}").into())
     }
 
-    // This example installs the service defined in `examples/shmemcam.rs`.
-    // In the real world code you would set the executable path to point to your own binary
-    // that implements windows service.
-    let service_binary_path = current_exe().unwrap().with_file_name("shmemcam.exe");
-
     let service_info = ServiceInfo {
         name: OsString::from("shmemcam"),
         display_name: OsString::from("Shared Memory Camera service"),
         service_type: ServiceType::OWN_PROCESS,
-        start_type: ServiceStartType::OnDemand,
+        start_type: ServiceStartType::AutoStart,
         error_control: ServiceErrorControl::Normal,
-        executable_path: service_binary_path,
-        launch_arguments: runtime_args,
+        executable_path: current_exe().unwrap().with_file_name("shmemcam.exe"),
+        launch_arguments: vec![],
         dependencies: vec![],
         account_name: None, // run as System
         account_password: None,
     };
-    let service = service_manager.create_service(&service_info, ServiceAccess::CHANGE_CONFIG)?;
+    let service = service_manager.create_service(&service_info, ServiceAccess::ALL_ACCESS)?;
     service.set_description("Windows service that captures all cameras and exposes them over MMFs")?;
     Ok(())
 }

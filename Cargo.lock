@@ -283,6 +283,7 @@ version = "0.1.0"
 dependencies = [
  "nokhwa",
  "windows-service",
+ "windows-sys",
  "winmmf",
 ]
 

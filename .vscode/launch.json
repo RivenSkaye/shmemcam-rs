@@ -1,0 +1,116 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'installer'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=installer",
+                    "--package=shmemcam"
+                ],
+                "filter": {
+                    "name": "installer",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'installer'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=installer",
+                    "--package=shmemcam"
+                ],
+                "filter": {
+                    "name": "installer",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'shmemcam'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=shmemcam",
+                    "--package=shmemcam"
+                ],
+                "filter": {
+                    "name": "shmemcam",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'shmemcam'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=shmemcam",
+                    "--package=shmemcam"
+                ],
+                "filter": {
+                    "name": "shmemcam",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'uninstaller'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=uninstaller",
+                    "--package=shmemcam"
+                ],
+                "filter": {
+                    "name": "uninstaller",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'uninstaller'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=uninstaller",
+                    "--package=shmemcam"
+                ],
+                "filter": {
+                    "name": "uninstaller",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
