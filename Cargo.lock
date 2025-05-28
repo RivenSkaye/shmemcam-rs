@@ -282,6 +282,7 @@ name = "shmemcam"
 version = "0.1.0"
 dependencies = [
  "nokhwa",
+ "windows-ext",
  "windows-service",
  "windows-sys",
  "winmmf",

@@ -9,6 +9,7 @@
         "input-msmf",
         "output-threaded"
     ]}
+    windows-ext = "0.0.3"
     windows-service = "0.8.0"
     winmmf = "0.4"
 
